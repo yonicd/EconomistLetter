@@ -1,0 +1,94 @@
+---
+title: "Economists Letter Published in the Wall Street Journal"
+author: "Jonathan Sidi"
+date: "November 2, 2016"
+output: html_document
+---
+
+On November 1, 2016 a letter was published in the Wall Street Journal signed by the top **370 academic economists from over 100 distinct universities and colleges** around the US and the World opposing the election of Donald J. Trump. To get an idea of the how far reaching so many academics this is an interactive map is shown below with each of the economist's and their affiliated university. 
+
+
+
+```{r,echo=F}
+suppressWarnings({suppressMessages({
+library(leaflet)
+library(maps)
+library(rgdal)
+library(dplyr)})})
+
+
+load('/Users/jonathans/Downloads/MappingEconomists.rda')
+
+
+df <- sp::SpatialPointsDataFrame(
+  toMap%>%select(latitude,longitude)%>%filter(!is.na(latitude))%>%as.matrix,
+  data.frame(type = factor(toMap$V2),
+             size=log(rnorm(nrow(toMap),200,20)+1)*2,
+             label=toMap$V2,
+             #html can be used inside the popups
+             #paste(sep="<br/>","Tomatoe: 2 nis","Cucumber: 1 nis"),
+             #"Nehalim","HaEla","Maccabim","Hahula"),
+             id=factor(toMap$V2),
+             name=factor(paste(toMap$V1,toMap$V2,sep="<br/>"))
+  )
+)
+
+
+m=leaflet() %>%
+  addTiles()%>%
+  setView(lat=36.9552325, lng=-97.9683254, zoom = 4)
+
+m=m%>%addCircleMarkers(data=df,
+                     lat=coordinates(df)[,1],
+                     lng=coordinates(df)[,2], 
+                     stroke=F,
+                     #color = ~pal(type),
+                     popup=~name,
+                     fillOpacity = 0.5, #transparency of marker
+                     clusterId = ~id, #define clusters by factor
+                     clusterOptions = markerClusterOptions(),
+                     options=markerOptions(clickable=TRUE))
+
+
+for(id.text in levels(df@data$id)){
+  m=m%>%addCircleMarkers(data=subset(df,id==id.text),
+                         lat=coordinates(df)[df$id==id.text,1],
+                         lng=coordinates(df)[df$id==id.text,2], 
+                         group = id.text,
+                         stroke=F,
+                         #color = ~pal(type),
+                         popup=~name,
+                         fillOpacity = 0.5, #transparency of marker
+                         clusterId = ~id, #define clusters by factor
+                         clusterOptions = markerClusterOptions(),
+                         options=markerOptions(clickable=TRUE))
+}
+
+m
+```
+
+
+This is the [letter](http://www.wsj.com/public/resources/documents/EconomistLetter11012016.pdf) that was signed:
+
+We, the undersigned economists, represent a broad variety of areas of expertise and are united in our opposition to Donald Trump. We recommend that voters choose a different candidate on the following grounds:
+
+  - He degrades trust in vital public institutions that collect and disseminate information
+about the economy, such as the Bureau of Labor Statistics, by spreading disinformation
+about the integrity of their work.
+  - He has misled voters in states like Ohio and Michigan by asserting that the renegotiation of NAFTA or the imposition of tariffs on China would substantially increase employment in manufacturing. In fact, manufacturing’s share of employment has been declining since the 1970s and is mostly related to automation, not trade.
+  - He claims to champion former manufacturing workers, but has no plan to assist their transition to well-compensated service sector positions. Instead, he has diverted the policy discussion to options that ignore both the reality of technological progress and the benefits of international trade.
+  - He has misled the public by asserting that U.S. manufacturing has declined. The location and product composition of manufacturing has changed, but the level of output has more than doubled in the U.S. since the 1980s.
+  - He has falsely suggested that trade is zero-sum and that the “toughness” of negotiators primarily drives trade deficits.
+  - He has misled the public with false statements about trade agreements eroding national income and wealth. Although the gains have not been equally distributed—and this is an important discussion in itself—both mean income and mean wealth have risen substantially in the U.S. since the 1980s.
+  - He has lowered the seriousness of the national dialogue by suggesting that the
+elimination of the Environmental Protection Agency or the Department of Education
+would significantly reduce the fiscal deficit. A credible solution will require an increase in tax revenue and/or a reduction in spending on Social Security, Medicare, Medicaid, or Defense.
+  - He claims he will eliminate the fiscal deficit, but has proposed a plan that would decrease tax revenue by $2.6 to $5.9 trillion over the next decade according to the non-partisan Tax Foundation.
+  - He claims that he will reduce the trade deficit, but has proposed a reduction in public saving that is likely to increase it.
+  - He uses immigration as a red herring to mislead voters about issues of economic
+importance, such as the stagnation of wages for households with low levels of education. Several forces are responsible for this, but immigration appears to play only a modest role. Focusing the dialogue on this channel, rather than more substantive channels, such as automation, diverts the public debate to unproductive policy options.
+  - He has misled the electorate by asserting that the U.S. is one of the most heavily taxed countries. While the U.S. has a high top statutory corporate tax rate, the average effective rate is much lower, and taxes on income and consumption are relatively low. Overall, the U.S. has one of the lowest ratios of tax revenue to GDP in the OECD.
+  - His statements reveal a deep ignorance of economics and an inability to listen to credible experts. He repeats fake and misleading economic statistics, and pushes fallacies about the VAT and trade competitiveness.
+  - He promotes magical thinking and conspiracy theories over sober assessments of feasible economic policy options 
+
+Donald Trump is a dangerous, destructive choice for the country. He misinforms the electorate, degrades trust in public institutions with conspiracy theories, and promotes willful delusion over engagement with reality. If elected, he poses a unique danger to the functioning of democratic and economic institutions, and to the prosperity of the country. For these reasons, we strongly recommend that you do not vote for Donald Trump.
