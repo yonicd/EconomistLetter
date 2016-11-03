@@ -1,6 +1,6 @@
 ---
 title: "Economists Letter Published in the Wall Street Journal"
-author: "Jonathan Sidi"
+author: "[Jonathan Sidi](https://github.com/yonicd/EconomistLetter)"
 date: "November 2, 2016"
 output: html_document
 ---
